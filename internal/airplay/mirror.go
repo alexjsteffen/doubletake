@@ -228,7 +228,8 @@ func (c *AirPlayClient) setupMirrorSession(ctx context.Context, cfg StreamConfig
 		audioSetupPlist["ekey"] = c.FpEkey
 		audioSetupPlist["eiv"] = c.fpIV
 		dbg("[SETUP] FairPlay ekey=%d bytes, eiv=%d bytes, et=32", len(c.FpEkey), len(c.fpIV))
-	} else if audioMode != audioSecurityChaCha || len(audioChaChaKey) != 32 {
+	}
+	if (c.FpEkey == nil || c.fpIV == nil) && (audioMode != audioSecurityChaCha || len(audioChaChaKey) != 32) {
 		dbg("[SETUP] WARNING: no FairPlay ekey/eiv — audio will likely not work")
 	}
 
@@ -335,7 +336,7 @@ func (c *AirPlayClient) setupMirrorSession(ctx context.Context, cfg StreamConfig
 	}
 	// UxPlay reads ekey/eiv from the root level of the SETUP request to derive
 	// the video decryption key. Without these, video decryption won't work on UxPlay.
-	if c.FpEkey != nil && encKey != nil {
+	if c.FpEkey != nil && encIV != nil {
 		videoSetupPlist["ekey"] = c.FpEkey
 		videoSetupPlist["eiv"] = encIV
 		dbg("[SETUP] video SETUP includes FairPlay ekey=%d bytes, eiv=%d bytes", len(c.FpEkey), len(encIV))

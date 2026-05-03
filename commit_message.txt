@@ -1,0 +1,3 @@
+Fix AirPlay RTSP connection issue
+
+Include DACP-ID and Active-Remote headers in RTSP requests. Send ekey and eiv in all SETUP payloads to allow successful mirroring connection.
