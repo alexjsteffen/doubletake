@@ -52,6 +52,8 @@ type AirPlayClient struct {
 	PairKeys  *PairKeys
 	sessionID string // X-Apple-Session-ID, set once per connection
 	PairingID string // Our pairing identifier (UUID)
+	dacpID       string
+	activeRemote string
 
 	// Encryption state after pair-verify
 	encrypted     bool
@@ -79,6 +81,8 @@ func NewAirPlayClient(host string, port int) *AirPlayClient {
 		port:      port,
 		sessionID: generateUUID(),
 		PairingID: generateUUID(),
+		dacpID:       strings.ToUpper(strings.ReplaceAll(generateUUID(), "-", "")[:16]),
+		activeRemote: fmt.Sprintf("%d", time.Now().Unix()),
 	}
 }
 
@@ -169,6 +173,8 @@ func (c *AirPlayClient) httpRequest(method, path, contentType string, body []byt
 	fmt.Fprintf(&buf, "%s %s RTSP/1.0\r\n", method, path)
 	fmt.Fprintf(&buf, "CSeq: %d\r\n", seq)
 	fmt.Fprintf(&buf, "User-Agent: AirPlay/935.7.1\r\n")
+	fmt.Fprintf(&buf, "DACP-ID: %s\r\n", c.dacpID)
+	fmt.Fprintf(&buf, "Active-Remote: %s\r\n", c.activeRemote)
 	for _, hdrs := range extraHeaders {
 		for k, v := range hdrs {
 			fmt.Fprintf(&buf, "%s: %s\r\n", k, v)
@@ -215,6 +221,8 @@ func (c *AirPlayClient) rawRequest(method, path, contentType string, body []byte
 	fmt.Fprintf(&buf, "Content-Type: %s\r\n", contentType)
 	fmt.Fprintf(&buf, "User-Agent: AirPlay/935.7.1\r\n")
 	fmt.Fprintf(&buf, "X-Apple-ProtocolVersion: 1\r\n")
+	fmt.Fprintf(&buf, "DACP-ID: %s\r\n", c.dacpID)
+	fmt.Fprintf(&buf, "Active-Remote: %s\r\n", c.activeRemote)
 	for _, hdrs := range extraHeaders {
 		for k, v := range hdrs {
 			fmt.Fprintf(&buf, "%s: %s\r\n", k, v)
@@ -250,6 +258,8 @@ func (c *AirPlayClient) rtspRequest(method, uri, contentType string, body []byte
 	fmt.Fprintf(&buf, "%s %s RTSP/1.0\r\n", method, uri)
 	fmt.Fprintf(&buf, "CSeq: %d\r\n", seq)
 	fmt.Fprintf(&buf, "User-Agent: AirPlay/935.7.1\r\n")
+	fmt.Fprintf(&buf, "DACP-ID: %s\r\n", c.dacpID)
+	fmt.Fprintf(&buf, "Active-Remote: %s\r\n", c.activeRemote)
 	// NOTE: Do NOT send X-Apple-Session-ID here. UxPlay classifies CSeq connections
 	// as RAOP type and crashes (strcmp against NULL) if session ID is present.
 	// Apple TV doesn't need it either since the session is identified by TCP connection.
