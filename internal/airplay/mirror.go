@@ -173,7 +173,6 @@ func (c *AirPlayClient) setupMirrorSession(ctx context.Context, cfg StreamConfig
 	audioControlLPort := audioCtrlConn.LocalAddr().(*net.UDPAddr).Port
 
 	audioCT, audioSPF, audioFmt, latMin, latMax, _ := selectedAudioCodec.Info()
-	audioFormatIndex := selectedAudioCodec.AudioFormatIndex()
 	audioRedundant := int64(0)
 	if useAudioFEC(audioMode == audioSecurityChaCha) {
 		audioRedundant = 2
@@ -187,7 +186,6 @@ func (c *AirPlayClient) setupMirrorSession(ctx context.Context, cfg StreamConfig
 		"spf":                audioSPF,
 		"sr":                 int64(44100),
 		"audioFormat":        audioFmt,
-		"audioFormatIndex":   audioFormatIndex,
 		"controlPort":        int64(audioControlLPort),
 		"audioMode":          "default",
 		"usingScreen":        true,
